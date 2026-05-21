@@ -12,6 +12,52 @@ DAC(Digital-to-Analog Converter)数模转换器将数字信号转换为模拟信
 
 ---
 
+## 🗺️ 使用场景速查
+
+**你想输出什么 → 用哪种方案**
+
+| 场景 | 方案 |
+|------|------|
+| 输出固定直流电压（如 1.65V 偏置电压） | `HAL_DAC_SetValue` 写入固定值，无需 DMA |
+| 模拟量控制（调节电机转速、阀门开度） | 动态调用 `HAL_DAC_SetValue` 更新值 |
+| 生成周期波形（正弦波、锯齿波、三角波） | 预计算波形数组 + DMA 循环 + 定时器触发 |
+| 音频播放（PCM 数据，8kHz / 16kHz） | DMA 循环 + 定时器精确触发，采样率 = 定时器触发频率 |
+| 简单三角波 / 噪声（不需精确波形） | `HAL_DACEx_TriangleWaveGenerate` / `NoiseWaveGenerate` |
+
+**DAC 引脚固定，必须配为模拟模式**
+
+- `DAC_OUT1` → **PA4**
+- `DAC_OUT2` → **PA5**
+
+```c
+GPIO_InitStruct.Pin = GPIO_PIN_4;
+GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;  // 必须
+HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+```
+
+**电压计算**
+
+```
+输出电压 = DAC值 / 4095 × VDDA（通常 3.3V）
+```
+
+| 目标电压 | DAC 值 |
+|----------|--------|
+| 0V | 0 |
+| 1.65V（中点） | 2048 |
+| 3.3V | 4095 |
+
+**DAC vs PWM + 滤波 模拟输出对比**
+
+| | DAC | PWM + RC 低通滤波 |
+|--|-----|-----------------|
+| 输出质量 | 真模拟，无纹波 | 有纹波，需滤波后才平滑 |
+| 响应速度 | 快，立即更新 | 受 RC 时间常数限制 |
+| 引脚 | 仅 PA4 / PA5 | 任意 PWM 引脚 |
+| 适用 | 音频、精密参考电压、信号源 | 电机调速、LED 调光（对精度要求低） |
+
+---
+
 ## 📚 相关文件
 
 - **头文件**: `stm32f1xx_hal_dac.h`, `stm32f1xx_hal_dac_ex.h`

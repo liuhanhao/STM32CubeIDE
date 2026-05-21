@@ -13,6 +13,49 @@ RCC(Reset and Clock Control)复位和时钟控制模块负责管理STM32F1的时
 
 ---
 
+## 🗺️ 使用场景速查
+
+**时钟源怎么选**
+
+| 时钟源 | 精度 | 硬件要求 | 适用场景 |
+|--------|------|----------|----------|
+| HSE（外部晶振，8MHz） | 高（<±50ppm） | 需外接晶振（OSC_IN/OUT） | 正式产品，USB / CAN / 精确波特率 |
+| HSI（内部 RC，8MHz） | 低（±1%） | 无需外部器件 | 原型开发，不需要 USB，成本敏感 |
+| PLL（HSE 或 HSI 倍频） | 取决于来源 | 无额外器件 | 需要高主频（72MHz）时必用 |
+| LSE（32.768kHz 晶振） | 高 | 需外接晶振（PC14/PC15） | RTC 实时时钟 |
+| LSI（内部 RC，~40kHz） | 低（±5%） | 无需外部器件 | IWDG，低精度 RTC |
+
+**常见场景配置参考**
+
+| 场景 | 推荐配置 |
+|------|----------|
+| 默认全速运行 | HSE(8MHz) × 9 → 72MHz SYSCLK |
+| 没有外部晶振 | HSI/2 × 16 → 64MHz SYSCLK |
+| 需要 USB 功能 | 必须用 HSE，72MHz 经 1.5 分频得 48MHz USB 时钟 |
+| CAN 精确波特率 | 用 HSE，APB1=36MHz，保证整除分频 |
+| 低功耗模式 | 降低 SYSCLK，关闭不用外设的时钟 |
+
+**外设挂在哪条总线（影响时钟频率和性能）**
+
+| 总线 | 最高频率 | 挂载的主要外设 |
+|------|----------|---------------|
+| AHB | 72MHz | DMA、SRAM、Flash、CRC |
+| APB2 | 72MHz | GPIOA~G、USART1、SPI1、ADC1/2/3、TIM1/8 |
+| APB1 | 36MHz | USART2/3、SPI2、I2C1/2、CAN、TIM2~7、DAC、USB |
+
+> ADC 时钟来自 APB2，上限 14MHz，需额外在 RCC 中配置 ADC 预分频（通常 6 分频：72MHz/6=12MHz）。
+
+**外设时钟使能顺序提示**
+
+使用任何外设前必须先使能对应时钟，否则读写寄存器无效或硬件故障：
+
+```c
+__HAL_RCC_GPIOC_CLK_ENABLE();   // 先使能
+HAL_GPIO_WritePin(GPIOC, ...);  // 再操作
+```
+
+---
+
 ## 📚 相关文件
 
 - **头文件**: `stm32f1xx_hal_rcc.h`, `stm32f1xx_hal_rcc_ex.h`

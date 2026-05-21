@@ -13,6 +13,41 @@ SPI(Serial Peripheral Interface)串行外设接口是一种高速全双工同步
 
 ---
 
+## 🗺️ 使用场景速查
+
+**SPI vs I2C 怎么选**
+
+| 对比项 | SPI | I2C |
+|--------|-----|-----|
+| 速度 | 最高 18Mbps（F1） | 最高 400KHz |
+| 引脚数 | 4 根（SCK/MOSI/MISO/CS） | 2 根（SCL/SDA） |
+| 多设备 | 每个设备独立 CS，无地址概念 | 共享总线，靠地址区分 |
+| 适合场景 | 高速、大数据量（Flash、屏幕、ADC） | 低速、多设备（传感器、配置寄存器） |
+
+**你想做什么 → 用哪个函数/模式**
+
+| 场景 | 推荐方案 |
+|------|----------|
+| 读写 SPI Flash（W25Q 系列） | 阻塞 `Transmit` / `Receive`，手动拉 CS |
+| 驱动 SPI OLED / TFT LCD（少量命令） | 阻塞发送命令 + 数据 |
+| 高速刷屏（大量像素数据） | DMA 发送 `HAL_SPI_Transmit_DMA`，刷屏期间 CPU 可做其他事 |
+| 读取 SPI ADC（如 MCP3208） | 全双工 `TransmitReceive`，同时发命令收数据 |
+| 两块 MCU 互联通信 | 一主一从，全双工模式 |
+
+**SPI 模式（CPOL/CPHA）速查**
+
+| 常见芯片 | SPI 模式 |
+|----------|----------|
+| W25Q 系列 Flash | Mode 0（CPOL=0，CPHA=0） |
+| SSD1306 OLED | Mode 0 |
+| MCP3208 ADC | Mode 0 |
+| SD 卡（SPI 模式） | Mode 0 |
+| MAX31855 热电偶 ADC | Mode 0 |
+
+> 不确定时优先尝试 Mode 0，绝大多数 SPI 设备都兼容。
+
+---
+
 ## 📚 相关文件
 
 - **头文件**: `stm32f1xx_hal_spi.h`

@@ -18,6 +18,42 @@ STM32F1包含多种定时器:
 
 ---
 
+## 🗺️ 使用场景速查
+
+**你想做什么 → 用哪种定时器功能**
+
+| 场景 | 功能 | 关键函数 |
+|------|------|----------|
+| 周期性任务调度（1ms / 10ms 心跳） | 基础定时器中断 | `HAL_TIM_Base_Start_IT` + `PeriodElapsedCallback` |
+| 控制舵机、直流电机 PWM 调速 | PWM 输出 | `HAL_TIM_PWM_Start` + `__HAL_TIM_SET_COMPARE` |
+| LED 调光（呼吸灯） | PWM 输出，动态调占空比 | 同上 |
+| 超声波测距（测高电平持续时间） | 输入捕获 | `HAL_TIM_IC_Start_IT` + `IC_CaptureCallback` |
+| 测量信号频率 / 脉宽 | 输入捕获 | 捕获两次上升沿，差值除以计数频率 |
+| 旋转编码器计数 | 编码器接口模式 | `HAL_TIM_Encoder_Start` + 读 `__HAL_TIM_GET_COUNTER` |
+| DAC / ADC 精确定时触发 | 定时器 TRGO | 配置 `MasterOutputTrigger = TIM_TRGO_UPDATE` |
+| 互补 PWM + 死区（H 桥电机驱动） | 高级定时器互补输出 | TIM1 / TIM8 + `HAL_TIMEx_PWMN_Start` |
+
+**定时器选型**
+
+| 需求 | 推荐定时器 |
+|------|-----------|
+| 简单定时，不需要 PWM / 捕获 | TIM6 / TIM7（基础定时器，省资源） |
+| PWM 输出或输入捕获（4 通道） | TIM2 ~ TIM5（通用定时器） |
+| 互补 PWM + 死区控制（电机驱动） | TIM1 / TIM8（高级定时器） |
+| 系统心跳（避免占用通用定时器） | SysTick（HAL_Delay 已使用，注意共用） |
+
+**PWM 频率与分辨率怎么权衡**
+
+| 应用 | 推荐 PWM 频率 | 推荐 Period 值 |
+|------|-------------|--------------|
+| 舵机控制 | 50Hz（20ms） | 20000（1μs/步） |
+| 直流电机调速 | 1kHz ~ 20kHz | 1000 |
+| LED 调光（无频闪感） | 500Hz ~ 2kHz | 100 ~ 1000 |
+
+> 频率越高，Period 越小，分辨率（可调等级数）越低。
+
+---
+
 ## 📚 相关文件
 
 - **头文件**: `stm32f1xx_hal_tim.h`, `stm32f1xx_hal_tim_ex.h`
