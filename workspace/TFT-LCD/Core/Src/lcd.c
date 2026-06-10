@@ -121,14 +121,14 @@ static void LCD_SetParam(void)
     lcddev.width  = 320;
     lcddev.height = 240;
     LCD_WriteCmd(0x36);
-    LCD_WriteData(0x6C);   /* MY=0, MX=1, MV=1, ML=0, BGR=1, MH=1 */
+    LCD_WriteData(0x68);   /* MY=0, MX=1, MV=1, BGR=1 - 原点在右上角，X轴向左 */
 #else
     /* 竖屏 240x320 */
     lcddev.dir    = 0;
     lcddev.width  = 240;
     lcddev.height = 320;
     LCD_WriteCmd(0x36);
-    LCD_WriteData(0xC9);   /* MY=1, MX=1, MV=0, ML=0, BGR=1, MH=1 */
+    LCD_WriteData(0x08);   /* MY=0, MX=0, MV=0, BGR=1 - 原点在左上角 */
 #endif
 }
 
@@ -399,11 +399,11 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint16_t fc, uint16_t bc,
             /* 取当前行的字节（1206每行1字节，1608每行取高字节即第一个字节） */
             uint8_t byte = font[row];
             for (uint8_t col = 0; col < w; col++) {
-                /* 最高位对应最左像素 */
-                uint16_t color = (byte & 0x80) ? fc : bc;
+                /* 最低位对应最左像素（反转像素顺序以适应右到左的X轴） */
+                uint16_t color = (byte & 0x01) ? fc : bc;
                 uint8_t  buf[2] = {(uint8_t)(color >> 8), (uint8_t)(color & 0xFF)};
                 HAL_SPI_Transmit(&hspi2, buf, 2, HAL_MAX_DELAY);
-                byte <<= 1;
+                byte >>= 1;
             }
         }
         LCD_CS_HIGH();
@@ -412,10 +412,10 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint16_t fc, uint16_t bc,
         for (uint8_t row = 0; row < rows; row++) {
             uint8_t byte = font[row];
             for (uint8_t col = 0; col < w; col++) {
-                if (byte & 0x80) {
+                if (byte & 0x01) {
                     LCD_DrawPoint_Color(x + col, y + row, fc);
                 }
-                byte <<= 1;
+                byte >>= 1;
             }
         }
     }
