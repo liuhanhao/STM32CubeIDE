@@ -2,16 +2,113 @@
 # STM32CubeIDE 编译产物
 # ===========================
 
-# 所有工程的 Debug / Release 构建输出目录（含子目录）
+# 构建输出目录
 **/Debug/
 **/Release/
 
+# 编译中间文件
+**/*.o
+**/*.d
+**/*.su
+**/*.lst
+**/*.cyclo
+
+# 链接产物
+**/*.elf
+**/*.bin
+**/*.hex
+**/*.map
+**/*.list
+
+# 构建系统生成的 Makefile
+**/Debug/makefile
+**/Debug/objects.mk
+**/Debug/sources.mk
+**/Debug/objects.list
+**/Debug/subdir.mk
+**/Debug/**/subdir.mk
+
 # ===========================
-# STM32CubeIDE Workspace 元数据
+# STM32CubeIDE 工程配置
 # ===========================
 
-# IDE 运行日志、lock 文件、插件缓存等
+# Eclipse/CubeIDE 工作区元数据
 workspace/.metadata/
+**/.metadata/
+
+# IDE 自动生成的设置文件
+**/.settings/language.settings.xml
+
+# macOS Eclipse 特定文件
+**/.osx.project
+
+# 构建配置缓存
+**/.cache/
+
+# Launch 配置（通常是个人配置）
+**/*.launch
+
+# ===========================
+# STM32CubeMX 生成文件
+# ===========================
+
+# MX 备份文件
+**/*.ioc.bak
+**/.mxproject.bak
+
+# ===========================
+# Keil MDK-ARM
+# ===========================
+
+# Keil 编译产物
+**/OBJ/
+**/DebugConfig/
+**/Listings/
+**/Objects/
+**/RTE/
+
+# Keil 工程文件
+**/*.uvguix.*
+**/*.uvoptx
+**/*.uvopt
+**/*.bak
+**/*.dep
+**/*.axf
+**/*.lnp
+**/*.scvd
+
+# ===========================
+# IAR Embedded Workbench
+# ===========================
+
+**/Debug_*/
+**/Release_*/
+**/*.ewd
+**/*.ewt
+**/*.eww
+**/*.dni
+**/*.wsdt
+**/*.browse
+
+# ===========================
+# PlatformIO / Arduino（ESP32）
+# ===========================
+
+**/.pio/
+**/.vscode/
+**/build/
+**/.pioenvs/
+**/.piolibdeps/
+**/lib/readme.txt
+**/*.pio.ini.bak
+
+# ===========================
+# SquareLine Studio
+# ===========================
+
+# SquareLine 备份和缓存
+**/*.spj.bak
+**/assets/.cache/
 
 # ===========================
 # macOS 系统文件
@@ -19,3 +116,174 @@ workspace/.metadata/
 
 .DS_Store
 **/.DS_Store
+._*
+.AppleDouble
+.LSOverride
+
+# macOS 缩略图
+.Thumbnails
+
+# macOS 卷信息
+.VolumeIcon.icns
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.apdisk
+
+# ===========================
+# Windows 系统文件
+# ===========================
+
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ===========================
+# Linux 系统文件
+# ===========================
+
+*~
+.directory
+.Trash-*
+
+# ===========================
+# 编辑器临时文件
+# ===========================
+
+# Vim
+**/*.swp
+**/*.swo
+**/*.swn
+**/*~
+
+# Emacs
+**/*~
+**/#*#
+**/.#*
+
+# Sublime Text
+**/*.sublime-workspace
+**/*.sublime-project
+
+# VS Code
+.vscode/
+**/.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+**/.idea/
+**/*.iml
+
+# ===========================
+# 文档临时文件
+# ===========================
+
+# Markdown 编辑器
+**/*.tmp
+**/*.bak
+
+# Office 临时文件
+~$*.docx
+~$*.xlsx
+~$*.pptx
+*.tmp
+
+# PDF 临时文件
+**/*.pdf.tmp
+
+# ===========================
+# 压缩文件（通常不提交）
+# ===========================
+
+**/*.zip
+**/*.rar
+**/*.7z
+**/*.tar
+**/*.gz
+**/*.tar.gz
+
+# ===========================
+# 日志文件
+# ===========================
+
+**/*.log
+**/logs/
+**/*.log.*
+
+# ===========================
+# Git 相关
+# ===========================
+
+# Git 冲突文件
+**/*.orig
+**/*.rej
+
+# Git 补丁
+**/*.patch
+
+# ===========================
+# 密钥和凭证（安全）
+# ===========================
+
+**/*.key
+**/*.pem
+**/*.pfx
+**/*.p12
+**/.env
+**/.env.local
+**/secrets.*
+**/credentials.*
+
+# ===========================
+# 测试和覆盖率
+# ===========================
+
+**/coverage/
+**/.coverage
+**/*.cover
+**/htmlcov/
+**/.pytest_cache/
+**/.tox/
+
+# ===========================
+# Python（如果项目中使用）
+# ===========================
+
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+**/venv/
+**/.venv/
+**/env/
+
+# ===========================
+# Node.js（如果项目中使用）
+# ===========================
+
+**/node_modules/
+**/package-lock.json
+**/yarn.lock
+
+# ===========================
+# 特定项目排除
+# ===========================
+
+# 排除特定测试程序（如有需要可取消注释）
+# workspace/test_*/
+
+# ===========================
+# 保留规则说明
+# ===========================
+
+# 以下文件应该被提交到 Git：
+# - .project, .cproject (CubeIDE 工程文件)
+# - *.ioc (STM32CubeMX 配置文件)
+# - *.ld (链接脚本)
+# - platformio.ini (PlatformIO 配置)
+# - Core/Src/*.c, Core/Inc/*.h (源代码)
+# - Drivers/ (HAL 库源代码)
+# - hal_docs/, protocol/ (文档)
