@@ -1,7 +1,7 @@
 /**
  * @file    weather_client.h
  * @brief   天气数据获取客户端接口
- *          通过 AT 指令向和风天气 API 发起 HTTP GET 请求，
+ *          通过 AT 指令向心知天气 API 发起 HTTP GET 请求，
  *          轻量解析 JSON 响应并更新全局天气缓存 g_weather_data。
  */
 

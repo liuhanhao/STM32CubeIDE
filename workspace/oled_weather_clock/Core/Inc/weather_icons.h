@@ -6,7 +6,7 @@
  *   data[col * 2 + 0] = 该列上半部分（page 0，bit0 在最上方）
  *   data[col * 2 + 1] = 该列下半部分（page 1，bit0 在中间行）
  *
- * 图标分类（12 类，覆盖和风天气全部 icon 码）：
+ * 图标分类（12 类，覆盖心知天气全部 icon 码）：
  *   ICON_SUNNY       晴          100, 150
  *   ICON_PARTLY      晴间多云     101, 102, 103, 151, 152, 153
  *   ICON_CLOUDY      阴          104
@@ -360,8 +360,8 @@ static const uint8_t * const WEATHER_ICONS[ICON_COUNT] = {
 /*  icon 码 → 图标索引映射函数                                          */
 /* ------------------------------------------------------------------ */
 /**
- * @brief  将和风天气 icon 码映射到本地图标索引
- * @param  icon_code  和风天气返回的 icon 字段值（如 100, 300, 502 等）
+ * @brief  将心知天气 icon 码映射到本地图标索引
+ * @param  icon_code  心知天气返回的 icon 字段值（如 100, 300, 502 等）
  * @return WeatherIconIndex_t 枚举值
  */
 static inline WeatherIconIndex_t weather_icon_index(uint16_t icon_code)

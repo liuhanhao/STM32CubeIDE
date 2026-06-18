@@ -107,11 +107,11 @@
  *        AT_SendWait("AT+CWJAP=\"YOUR_SSID\",\"YOUR_PASSWORD\"", ...)
  *      将 YOUR_SSID 和 YOUR_PASSWORD 替换为实际 WiFi 名称和密码。
  *
- *   2. 和风天气 API 配置（Core/Src/weather_client.c 顶部）：
- *        #define WEATHER_CITY_ID   "101010100"       // 城市 ID
- *        #define WEATHER_API_KEY   "YOUR_API_KEY_HERE" // API Key
- *      城市 ID 查询：https://weather.qweather.com/
- *      API Key 申请：https://dev.qweather.com/
+ *   2. 心知天气 API 配置（Core/Src/weather_client.c 顶部）：
+ *        #define WEATHER_CITY_ID   "WX4FBXXFKE4F"        // 城市 ID
+ *        #define WEATHER_API_KEY   "YOUR_API_KEY_HERE"    // API Key
+ *      城市 ID 查询：https://www.seniverse.com/
+ *      API Key 申请：https://www.seniverse.com/
  *
  *   3. DHT11 数据引脚（Core/Inc/dht11.h）：
  *        #define DHT11_GPIO_PORT  GPIOA
