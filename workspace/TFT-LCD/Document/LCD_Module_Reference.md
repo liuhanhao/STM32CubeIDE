@@ -1,23 +1,6 @@
-# TFT-LCD 触摸屏模块技术参考手册
+# TFT-LCD 触摸屏模块参考文档
 
-> **文档性质**: 硬件规格和编程接口完整参考  
-> **模块型号**: 2.4寸 ILI9341 TFT-LCD + XPT2046 触摸  
-> **最后更新**: 2026-06-11  
-> **原始资料**: 购买模块附带的PDF文档整理
-
----
-
-## 文档用途
-
-本文档整理自购买模块的所有原始技术资料（PDF），提供：
-- 📋 完整硬件规格参数
-- 🔌 接口定义和引脚说明
-- 💻 编程命令参考
-- ⚡ 电气特性和时序要求
-
-**适合人群**: 需要深入了解硬件原理、优化驱动代码、进行高级开发的用户
-
-**快速开发**: 如果只是想快速上手，请先阅读 [接线指南](./Wiring_Guide.md)
+> 本文档整理自购买的 2.4 寸 TFT-LCD 触摸屏模块的所有原始资料，供开发时查阅。
 
 ---
 
@@ -487,46 +470,62 @@ R_touch 值越小表示按压力越大，一般设阈值 < 200Ω 认为有效触
 ### 电源部分
 - 外部输入 3.3V（或通过 ME6206 从 5V 稳压至 3.3V）
 - LCD VCC = 3.3V，背光 LED 串联 3.9Ω 限流电阻
+- **VDD（引脚 9）必须接 3.3V，不可接 5V！**
 
 ### TFT LCD 接口（SPI）
 
-```
-STM32/MCU        LCD Module
-─────────────────────────────
-任意 GPIO   →   CS（TFT_CS）     # 片选
-任意 GPIO   →   RS/D/C（TFT_D/C）# 数据/命令
-SPI_SCK     →   SCK（TFT_SCK）  # SPI 时钟
-SPI_MOSI    →   SDI（TFT_SDI）  # 数据写入
-SPI_MISO    ←   SDO（TFT_SDO）  # 数据读出（可选）
-任意 GPIO   →   RST（REST）     # 复位
-```
-
-### 触摸屏接口（SPI，与 ADS7843/XPT2046 兼容）
+LCD 控制器（ILI9341）通过 4 线 SPI 驱动。**LCD 的 SPI 总线与触摸控制器的 SPI 总线相互独立，不共享。**
 
 ```
-STM32/MCU        Touch Controller
-───────────────────────────────────
-任意 GPIO   →   CS（T_CS）      # 片选
-SPI_SCK     →   CLK（T_CLK）   # SPI 时钟
-SPI_MOSI    →   DIN（T_DIN）   # 数据写入
-SPI_MISO    ←   DOUT（T_OUT）  # 数据读出
-任意 GPIO   ←   IRQ（T_IRQ）   # 触摸中断（低有效）
-
-触摸屏四线：X+, Y+, X-, Y- 直接连到 TSC2046 对应引脚
+MCU                  LCD Module
+────────────────────────────────────────
+任意 GPIO   →  CS/（TFT_CS，引脚 5）   # 片选，低有效
+任意 GPIO   →  RS/D/C（引脚 4）        # 数据/命令
+SPI_SCK     →  SCK/SCL（引脚 3）       # SPI 时钟
+SPI_MOSI    →  SDA/SDI（引脚 6）       # 数据写入
+SPI_MISO    ←  SDO（引脚 7）           # 数据读出（可不接）
+任意 GPIO   →  RST（引脚 2）           # 复位，低有效
+任意 GPIO   →  LEDA（引脚 10）         # 背光阳极（见背光说明）
+GND         →  K1~K4（引脚 11~14）     # 背光阴极，全接 GND
 ```
+
+### 背光（LEDA / K1~K4）
+
+- **LEDA（引脚 10）**：LED 阳极，须接电源（3.3V）才能点亮背光
+- **K1~K4（引脚 11~14）**：LED 阴极，全部接 GND
+- **固定全亮**：LEDA 直接接 3.3V，K1~K4 接 GND
+- **PWM 调光**：通过 N-MOSFET（如 2N7002 / AO3400）驱动；MCU GPIO → Gate，Drain → LEDA，Source → 3.3V；K1~K4 接 GND
+
+> ⚠️ **若 LEDA 未接，屏幕背光不亮，即使 LCD 正常初始化也看不到画面！**
+
+### 触摸屏接口（SPI，XPT2046 / TSC2046）
+
+触摸控制器使用**独立的 SPI 总线**，引脚与 LCD SPI 完全分开：
+
+```
+MCU                  触摸控制器
+───────────────────────────────────────
+任意 GPIO   →  T_CS                    # 片选，低有效
+独立 GPIO   →  T_CLK                   # SPI 时钟（不共享 LCD SCK）
+独立 GPIO   →  T_DIN                   # 数据写入（不共享 LCD MOSI）
+独立 GPIO   ←  T_DO                    # 数据读出（不共享 LCD MISO）
+任意 GPIO   ←  T_IRQ                   # 触摸中断，低有效
+```
+
+> **注意：T_CLK、T_DIN、T_DO 是独立引脚，必须单独接线，不能复用 LCD 的 SCK/MOSI/MISO！**
 
 ### SD 卡接口（SPI）
 
 ```
-STM32/MCU        SD Card
+MCU              SD Card
 ──────────────────────────
-任意 GPIO   →   CS（SD_CS）
-SPI_SCK     →   CLK（SD_SCK）
-SPI_MOSI    →   MOSI（SD_MOSI）
-SPI_MISO    ←   MISO（SD_MISO）
+任意 GPIO   →  CS（SD_CS）
+SPI_SCK     →  CLK（SD_SCK）
+SPI_MOSI    →  MOSI（SD_MOSI）
+SPI_MISO    ←  MISO（SD_MISO）
 ```
 
-> **注意：** LCD、触摸屏、SD 卡共享同一 SPI 总线（SCK/MOSI/MISO），通过各自的 CS 引脚分时复用。
+> SD 卡 SPI 可以与 LCD 共享同一总线（通过各自 CS 分时复用），但触摸控制器必须独立。
 
 ### SDO 电平转换
 
@@ -534,7 +533,70 @@ SPI_MISO    ←   MISO（SD_MISO）
 
 ---
 
-## 7. 编程快速参考
+## 7. ESP32-S3 接线速查（本项目）
+
+> 本节为项目实际使用的 ESP32-S3 引脚分配，供快速对照接线。
+
+### 完整接线表
+
+```
+┌───────────────────────────────────────────────────────────┐
+│  ESP32-S3 GPIO     功能              LCD 模块引脚          │
+├───────────────────────────────────────────────────────────┤
+│  【LCD SPI - SPI2_HOST，硬件 SPI】                        │
+│  GPIO11         →  MOSI         →  SDA  (引脚 6)          │
+│  GPIO13         ←  MISO         ←  SDO  (引脚 7)          │
+│  GPIO12         →  SCK          →  SCL  (引脚 3)          │
+│  GPIO10         →  LCD_CS       →  CS/  (引脚 5)          │
+│  GPIO9          →  DC/RS        →  RS   (引脚 4)          │
+│  GPIO14         →  RST          →  RST  (引脚 2)          │
+├───────────────────────────────────────────────────────────┤
+│  【触摸 SPI - SPI3_HOST，独立总线】                        │
+│  GPIO7          →  T_CLK        →  T_CLK                  │
+│  GPIO8          →  T_DIN        →  T_DIN                  │
+│  GPIO4          ←  T_DO         ←  T_DO                   │
+│  GPIO5          →  T_CS         →  T_CS                   │
+│  GPIO6          ←  T_IRQ        ←  T_IRQ                  │
+├───────────────────────────────────────────────────────────┤
+│  【背光控制 - LEDC PWM】                                   │
+│  GPIO15 (PWM)   →  BL驱动       →  LEDA (引脚 10, 背光+)  │
+│  GND            →  背光负极     →  K1~K4(引脚 11~14)      │
+├───────────────────────────────────────────────────────────┤
+│  【电源】                                                  │
+│  3.3V           →  VDD          →  VDD  (引脚 9)          │
+│  GND            →  GND          →  GND  (引脚 1, 8)       │
+└───────────────────────────────────────────────────────────┘
+```
+
+### SPI 总线分配说明
+
+| SPI 总线 | 用途 | MOSI | MISO | SCK | 频率 |
+|----------|------|------|------|-----|------|
+| SPI2_HOST | LCD（ILI9341） | GPIO11 | GPIO13 | GPIO12 | 80 MHz |
+| SPI3_HOST | 触摸（XPT2046）| GPIO8  | GPIO4  | GPIO7  | 2 MHz  |
+
+> ⚠️ **LCD 和触摸屏使用独立 SPI 总线，T_CLK/T_DIN/T_DO 必须单独接线，不能与 LCD 的 SCK/MOSI/MISO 共用！**
+
+### 背光接线说明
+
+**方案 A（推荐，PWM 调光）：**
+```
+3.3V → N-MOSFET Source（如 AO3400 / 2N7002）
+N-MOSFET Drain → LEDA（引脚 10）
+GPIO15 → N-MOSFET Gate（高电平 = 背光亮）
+K1~K4（引脚 11~14）→ GND
+```
+
+**方案 B（简单，固定全亮）：**
+```
+3.3V → LEDA（引脚 10）直连
+K1~K4（引脚 11~14）→ GND
+（此时 GPIO15 不接，跳过 gpio_hal_init_backlight() 调用）
+```
+
+---
+
+## 8. 编程快速参考
 
 ### STM32 HAL 库 SPI 操作封装示例
 
@@ -662,14 +724,5 @@ uint8_t TP_IsTouched(void) {
 
 ---
 
-## 相关文档
-
-- **[项目主页](./README.md)** - 返回文档导航
-- **[接线指南](./Wiring_Guide.md)** - 快速接线说明
-- **[校准模式](./CALIBRATION_MODES.md)** - 触摸校准配置
-
----
-
-*文档版本: v2.0*  
-*生成日期: 2026-06-11*  
-*原始资料: 购买模块附带的PDF文档*
+*文档生成日期：2026-05-24*  
+*原始资料来源：购买的 TFT-LCD 触摸屏模块附带文档*
